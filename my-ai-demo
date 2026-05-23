@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星座漂流辞职局 - 互动Demo</title>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1e1e24;
+            --primary-color: #00f2fe;
+            --accent-color: #4facfe;
+            --text-color: #ffffff;
+            --text-secondary: #a0a0ab;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        /* 模拟手机容器 */
+        .phone-container {
+            width: 100%;
+            max-width: 412px;
+            height: 800px;
+            background-color: #000;
+            border-radius: 36px;
+            border: 8px solid #27272a;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 顶部状态栏占位 */
+        .status-bar {
+            height: 30px;
+            background: #000;
+            color: var(--text-secondary);
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 20px;
+            align-items: center;
+        }
+
+        /* 页面视图区域 */
+        .view-wrapper {
+            flex: 1;
+            position: relative;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .view {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        .view.active {
+            display: flex;
+        }
+
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* 通用按钮 */
+        .btn {
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+            color: #000;
+            font-weight: bold;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 15px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: #27272a;
+            color: var(--text-color);
+            border: 1px solid #3f3f46;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        select, textarea {
+            width: 100%;
+            background-color: var(--card-bg);
+            border: 1px solid #3f3f46;
+            color: #fff;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        select:focus, textarea:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* 结果卡片 */
+        .result-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #3f3f46;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #3f3f46;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .card-tag {
+            color: var(--primary-color);
+            font-size: 12px;
+            background: rgba(0, 242, 254, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .card-body {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .card-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: #27272a;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* 漂流瓶动画和状态 */
+        .bottle-anim {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .bottle-icon {
+            font-size: 72px;
+            animation: float 2s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        /* 动态轮播日志 */
+        .bottom-logs {
+            margin-top: auto;
+            background: rgba(39, 39, 42, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            overflow: hidden;
+            height: 35px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container">
+        <!-- 模拟状态栏 -->
+        <div class="status-bar">
+            <span>09:41</span>
+            <span>📶 🔋 100%</span>
+        </div>
+
+        <div class="view-wrapper">
+            
+            <!-- 页面一：首页 -->
+            <div class="view active" id="view-home">
+                <div style="margin-top: 50px;">
+                    <h1>星座漂流辞职局</h1>
+                    <div class="subtitle">今天的你，适合哪种体面发疯？</div>
+                </div>
+                
+                <div style="margin-top: auto; margin-bottom: 40px;">
+                    <button class="btn" onclick="switchView('view-create')">🔥 生成我的离职宣言</button>
+                    <button class="btn btn-secondary" onclick="openRandomBottle()">🌊 随机捞一个漂流瓶</button>
+                </div>
+
+                <div class="bottom-logs">
+                    <div id="log-text">1分钟前，白羊座狐狸投递了一封职场漂流信...</div>
+                </div>
+            </div>
+
+            <!-- 页面二：输入页 -->
+            <div class="view" id="view-create">
+                <h1>开始制作</h1>
+                <div class="subtitle">AI 将根据你的状态定制专属卡片</div>
+                
+                <div class="form-group">
+                    <label>选择你的星座</label>
+                    <select id="select-constellation">
+                        <option value="白羊座">白羊座</option>
+                        <option value="双鱼座">双鱼座</option>
+                        <option value="天蝎座">天蝎座</option>
+                        <option value="摩羯座">摩羯座</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>选择你的职场动物人格</label>
+                    <select id="select-animal">
+                        <option value="水豚 (表面稳定内心辞职)">水豚 (稳定摆烂)</option>
+                        <option value="黑猫 (冷静记仇型)">黑猫 (冷静记仇)</option>
+                        <option value="狐狸 (阴阳怪气型)">狐狸 (阴阳怪气)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>输入今天让你糟心的事（选填）</label>
+                    <textarea id="input-trouble" rows="3" placeholder="例如：领导又临时改需求、开了3个无效会议..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>发疯语气</label>
+                    <select id="select-tone">
+                        <option value="spicy">毒舌嘴替</option>
+                        <option value="crazy">搞笑发疯</option>
+                        <option value="gentle">温柔治愈</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="generateDeclaration()" style="margin-top: auto;">✨ AI 一键生成</button>
+                <button class="btn btn-secondary" onclick="switchView('view-home')">返回首页</button>
+            </div>
+
+            <!-- 页面三：卡片生成结果页 -->
+            <div class="view" id="view-result">
+                <h1>生成成功</h1>
+                <div class="subtitle">长按卡片可保存，或投递给陌生人</div>
+
+                <div class="result-card">
+                    <div class="card-header">
+                        <span id="card-title" style="font-weight: bold;">双鱼座水豚今日宣言</span>
+                        <span class="card-tag">今日体面发疯</span>
+                    </div>
+                    <div class="card-body" id="card-content">
+                        <!-- AI内容填充区 -->
+                    </div>
+                    <div class="card-meta" id="card-meta">
+                        <!-- 指标区 -->
+                    </div>
+                </div>
+
+                <button class="btn" onclick="throwIntoBottle()">🌊 装进漂流瓶，丢向太空</button>
+                <button class="btn btn-secondary" onclick="switchView('view-create')">重新生成</button>
+            </div>
+
+            <!-- 页面四：投递/捞取等待与成功页 -->
+            <div class="view" id="view-anim">
+                <div class="bottle-anim">
+                    <div class="bottle-icon" id="anim-icon">🍾</div>
+                    <h2 id="anim-title" style="margin-bottom: 10px;">正在投递您的情绪...</h2>
+                    <p id="anim-desc" style="color: var(--text-secondary); text-align: center; font-size: 14px;"></p>
+                    
+                    <button class="btn" id="anim-next-btn" style="margin-top: 40px; display: none;">查看结果</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // 模拟数据库（用于随机捞取的瓶子）
+        const mockBottles = [
+            {
+                title: "来自天蝎座黑猫的匿名信",
+                content: "今天我终于明白，打工最消耗人的不是工作本身，而是你明明已经很累，还要假装自己情绪稳定。如果你也刚巧刷到这封信，希望你今天至少有一件事是顺利的。不用安慰我，回我一句“我懂”就好。",
+                meta: "离职指数: 89% | 今日建议: 沉默但记仇，今晚先点杯奶茶。"
+            },
+            {
+                title: "来自白羊座狐狸的匿名信",
+                content: "开会最大的价值，就是让我确认大家确实都不知道自己在干什么。如果人生可以撤回，我希望能撤回今天早上的所有会议邀请。再问就是在走离职流程了。",
+                meta: "离职指数: 95% | 今日建议: 先别辞职，先把聊天记录截图保存。"
+            }
+        ];
+
+        // 模拟轮播消息
+        const logs = [
+            "1分钟前，双鱼座水豚投出了一封匿名信...",
+            "3分钟前，天蝎座黑猫收到了5条“我懂”共鸣...",
+            "5分钟前，白羊座狐狸生成了爆款离职宣言卡..."
+        ];
+        let logIndex = 0;
+        setInterval(() => {
+            logIndex = (logIndex + 1) % logs.length;
+            document.getElementById('log-text').innerText = logs[logIndex];
+        }, 3000);
+
+        // 界面切换方法
+        function switchView(viewId) {
+            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        // AI 生成算法（基于前端规则模板，实现秒级生成响应）
+        function generateDeclaration() {
+            const constellation = document.getElementById('select-constellation').value;
+            const animal = document.getElementById('select-animal').value;
+            const trouble = document.getElementById('input-trouble').value || "开不完的无效会议";
+            const tone = document.getElementById('select-tone').value;
+
+            let resultText = "";
+            let metaText = "";
+
+            if (tone === "spicy") {
+                resultText = `「${constellation}${animal}今日毒舌宣言」：\n\n我不是脾气急，我只是对低效需求过敏。领导说这件事情“很简单”，那我强烈建议这事儿永远由他来做。表面在开会，其实我的工牌已经在内心被扔进宇宙黑洞了。`;
+                metaText = "离职概率: 87% | 今日忍耐限度: ⚠️极低";
+            } else if (tone === "crazy") {
+                resultText = `「${constellation}${animal}今日发疯宣言」：\n\n别问了，问就是在走离职流程！身体在工位，灵魂早已在草原狂奔。如果开会能解决问题，那我的人生早就上市了！今晚谁也别想留下我加班！`;
+                metaText = "离职概率: 99% | 精神状态: 表面稳定型崩溃";
+            } else {
+                resultText = `「${constellation}${animal}今日温柔宣言」：\n\n今天真的累了，不是工作量的问题，而是那种一直被否定的无力感。没关系的，有些班不是人在上，就当是灵魂在渡劫。今晚好好睡一觉，明天依然是自由的自己。`;
+                metaText = "温暖指数: ✨100% | 今日建议: 先去吃饭，吃饱了再想辞职的事。";
+            }
+
+            // 填充卡片
+            document.getElementById('card-title').innerText = `${constellation} ${animal.split(' ')[0]} 卡片`;
+            document.getElementById('card-content').innerHTML = resultText.replace(/\n/g, '<br>');
+            document.getElementById('card-meta').innerText = metaText;
+
+            switchView('view-result');
+        }
+
+        // 投递瓶子交互流程
+        function throwIntoBottle() {
+            switchView('view-anim');
+            document.getElementById('anim-icon').innerText = "🍾";
+            document.getElementById('anim-title').innerText = "正在密封信件...";
+            document.getElementById('anim-desc').innerText = "AI 正在为您的情绪信件包装密封，准备投递向太空漂流瓶池...";
+            document.getElementById('anim-next-btn').style.display = "none";
+
+            setTimeout(() => {
+                document.getElementById('anim-icon').innerText = "✨";
+                document.getElementById('anim-title').innerText = "投递成功！";
+                document.getElementById('anim-desc').innerText = "您的情绪已被匿名抛向大海，最多会被 12 个打工人捞起。一旦有人点击“我懂”，您将收到提示。";
+                
+                const nextBtn = document.getElementById('anim-next-btn');
+                nextBtn.style.display = "block";
+                nextBtn.innerText = "回到首页";
+                nextBtn.onclick = () => switchView('view-home');
+            }, 2000);
+        }
+
+        // 随机捞取瓶子流程
+        function openRandomBottle() {
+            switchView('view-anim');
+            document.getElementById('anim-icon').innerText = "🌊";
+            document.getElementById('anim-title').innerText = "正在海面打捞...";
+            document.getElementById('anim-desc').innerText = "正在为您匹配今天同样在发疯、最懂你的职场有缘人...";
+            document.getElementById('anim-next-btn').style.display = "none";
+
+            setTimeout(() => {
+                const randomIdx = Math.floor(Math.random() * mockBottles.length);
+                const bottle = mockBottles[randomIdx];
+
+                document.getElementById('anim-icon').innerText = "💌";
+                document.getElementById('anim-title').innerText = "打捞成功！";
+                document.getElementById('anim-desc').innerText = `你捞到了一封：${bottle.title}`;
+
+                const nextBtn = document.getElementById('anim-next-btn');
+                nextBtn.style.display = "block";
+                nextBtn.innerText = "拆开看信";
+                nextBtn.onclick = () => {
+                    document.getElementById('card-title').innerText = bottle.title;
+                    document.getElementById('card-content').innerHTML = bottle.content;
+                    document.getElementById('card-meta').innerText = bottle.meta;
+                    // 伪装卡片按钮动作
+                    switchView('view-result');
+                };
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
